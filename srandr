@@ -9,6 +9,9 @@
 
 lvds=$(xrandr --query | egrep -om1  '^LVDS[0-9]')
 vga=$(xrandr --query | egrep -om1 '^VGA[0-9]')
+edp=$(xrandr --query | egrep -om1 '^eDP-[0-9]')
+dp=$(xrandr --query | grep -Evi 'disconnected' | egrep -om1 '^DisplayPort-[0-9]')
+hdmi=$(xrandr --query | grep -Evi 'disconnected' | egrep -om1 '^HDMI-[0-9]')
 
 eecho()
 {
@@ -47,8 +50,16 @@ if [[ -n $lvds && -n $vga ]]; then
             eecho "or simple like this => [l|v|lv|vl|m|q]"
             ;;
     esac
+elif [[ -n $edp && -n $dp ]]; then
+        xrandr --newmode "1920x1080_60.00"  172.80  1920 2040 2248 2576  1080 1081 1084 1118  -HSync +Vsync
+        xrandr --addmode $dp 1920x1080_60.00
+	xrandr --output "$edp" $mode1 --output "$dp" $mode2 --right-of "$edp"
+        xrandr --output $dp --mode 1920x1080_60.00
+
 else
     eecho 'Unable to find lvds or vga display.'
     eecho "LVDS: $lvds"
     eecho "VGA: $vga"
+    eecho "eDP: $edp"
+    eecho "DisplayPort: $dp"
 fi
